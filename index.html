@@ -125,6 +125,20 @@
             border-bottom: none;
         }
 
+        .weekly-plan {
+            background-color: #0d47a1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .week-card {
+            background-color: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
         .references {
             font-size: 0.9em;
             color: #a0a0a0;
@@ -226,20 +240,22 @@
             </div>
 
             <div class="input-group">
-                <label>Current GLP-1 Medication</label>
-                <select id="currentMed">
-                    <option value="none">None</option>
-                    <option value="semaglutide">Semaglutide</option>
-                    <option value="liraglutide">Liraglutide</option>
-                    <option value="dulaglutide">Dulaglutide</option>
-                    <option value="exenatide">Exenatide</option>
+                <label>Select GLP-1 Medication</label>
+                <select id="selectedMed">
+                    <option value="semaglutide">Semaglutide (Wegovy®)</option>
+                    <option value="liraglutide">Liraglutide (Saxenda®)</option>
+                    <option value="tirzepatide">Tirzepatide (Zepbound®)</option>
                 </select>
+            </div>
+
+            <div class="input-group">
+                <label>Current Week of Therapy</label>
+                <input type="number" id="currentWeek" min="1" max="20" value="1">
             </div>
         </div>
 
         <button onclick="calculateAll()">Calculate</button>
         <button class="secondary" onclick="resetForm()">Reset</button>
-        <button class="secondary" onclick="showInfo()">About This Tool</button>
     </div>
 
     <div class="results" id="resultsSection" style="display: none;">
@@ -274,27 +290,62 @@
             <p id="drugRecommendation"></p>
             <div class="drug-card" id="drugDetails"></div>
         </div>
+
+        <div class="weekly-plan">
+            <h4>Weekly Treatment Plan</h4>
+            <div id="weeklyDoseSchedule"></div>
+            <p id="oneWeekTarget"></p>
+        </div>
     </div>
 
     <div class="references">
         <h4>References & Methodology</h4>
         <ol>
-            <li>American Diabetes Association. Standards of Medical Care in Diabetes - 2023</li>
-            <li>Cockcroft DW, Gault MH. Prediction of creatinine clearance from serum creatinine. Nephron 1976;16:31-41</li>
-            <li>FDA Guidance for GLP-1 Receptor Agonists (2022)</li>
-            <li>WHO BMI Classification Guidelines (2023)</li>
-            <li>AACE Obesity Management Algorithm (2023)</li>
+            <li>FDA Prescribing Information: Wegovy®, Saxenda®, Zepbound®</li>
+            <li>ADA Standards of Medical Care in Diabetes - 2023</li>
+            <li>STEP Clinical Trials (Semaglutide)</li>
+            <li>SURPASS Clinical Trials (Tirzepatide)</li>
         </ol>
-        
-        <h4>Formulas Used</h4>
-        <ul>
-            <li><strong>BMI:</strong> weight(kg) / (height(m))²</li>
-            <li><strong>CrCl (Cockcroft-Gault):</strong> [(140 - age) × weight(kg)] / (72 × SCr) [×0.85 if female]</li>
-            <li><strong>Weight Loss Projection:</strong> Assumes 0.5kg/week loss rate</li>
-        </ul>
     </div>
 
     <script>
+        // Medication titration schedules
+        const medicationTitration = {
+            semaglutide: [
+                { week: 1, dose: 0.25, targetLoss: 0.5 },
+                { week: 2, dose: 0.25, targetLoss: 0.5 },
+                { week: 3, dose: 0.5, targetLoss: 0.75 },
+                { week: 4, dose: 0.5, targetLoss: 0.75 },
+                { week: 5, dose: 1.0, targetLoss: 1.0 },
+                { week: 6, dose: 1.0, targetLoss: 1.0 },
+                { week: 7, dose: 1.7, targetLoss: 1.0 },
+                { week: 8, dose: 1.7, targetLoss: 1.0 },
+                { week: 9, dose: 2.4, targetLoss: 1.0 },
+                { week: 10, dose: 2.4, targetLoss: 1.0 }
+            ],
+            liraglutide: [
+                { week: 1, dose: 0.6, targetLoss: 0.3 },
+                { week: 2, dose: 1.2, targetLoss: 0.5 },
+                { week: 3, dose: 1.8, targetLoss: 0.5 },
+                { week: 4, dose: 2.4, targetLoss: 0.75 },
+                { week: 5, dose: 3.0, targetLoss: 0.75 }
+            ],
+            tirzepatide: [
+                { week: 1, dose: 2.5, targetLoss: 0.5 },
+                { week: 2, dose: 2.5, targetLoss: 0.5 },
+                { week: 3, dose: 5.0, targetLoss: 0.75 },
+                { week: 4, dose: 5.0, targetLoss: 0.75 },
+                { week: 5, dose: 7.5, targetLoss: 1.0 },
+                { week: 6, dose: 7.5, targetLoss: 1.0 },
+                { week: 7, dose: 10.0, targetLoss: 1.0 },
+                { week: 8, dose: 10.0, targetLoss: 1.0 },
+                { week: 9, dose: 12.5, targetLoss: 1.0 },
+                { week: 10, dose: 12.5, targetLoss: 1.0 },
+                { week: 11, dose: 15.0, targetLoss: 1.0 },
+                { week: 12, dose: 15.0, targetLoss: 1.0 }
+            ]
+        };
+
         function calculateAll() {
             if (!document.getElementById('acknowledge').checked) {
                 alert("Please acknowledge the disclaimer before proceeding.");
@@ -306,10 +357,11 @@
             const sex = document.getElementById('sex').value;
             const weight = parseFloat(document.getElementById('weight').value);
             const targetWeight = parseFloat(document.getElementById('targetWeight').value);
-            const height = parseFloat(document.getElementById('height').value) / 100; // convert to meters
+            const height = parseFloat(document.getElementById('height').value) / 100;
             const creatinine = parseFloat(document.getElementById('creatinine').value);
             const glucose = parseFloat(document.getElementById('glucose').value);
-            const currentMed = document.getElementById('currentMed').value;
+            const selectedMed = document.getElementById('selectedMed').value;
+            const currentWeek = parseInt(document.getElementById('currentWeek').value);
 
             // Validate inputs
             if (!age || !weight || !height || !creatinine || !glucose) {
@@ -322,18 +374,17 @@
             const targetBmi = calculateBMI(targetWeight, height);
             const bmiCategory = getBMICategory(bmi);
             const weightLoss = weight - targetWeight;
-            const weeksNeeded = weightLoss / 0.5; // assuming 0.5kg/week loss
             const crCl = calculateCrCl(age, weight, creatinine, sex);
             const renalStatus = getRenalStatus(crCl);
             const glucoseStatus = getGlucoseStatus(glucose);
-            const recommendation = getDrugRecommendation(crCl, glucose, bmi, currentMed);
+            const recommendation = getDrugRecommendation(crCl, glucose, bmi, selectedMed);
 
-            // Display results
+            // Display standard results
             document.getElementById('bmiResult').innerHTML = `Current BMI: <strong>${bmi.toFixed(1)}</strong> | Target BMI: <strong>${targetBmi.toFixed(1)}</strong>`;
             document.getElementById('bmiCategory').innerHTML = `Category: <span class="${getBMIClass(bmi)}">${bmiCategory}</span>`;
             
             document.getElementById('weightLossResult').innerHTML = `Required weight loss: <strong>${weightLoss.toFixed(1)} kg</strong>`;
-            document.getElementById('weightLossRate').innerHTML = `Projected timeline: <strong>${Math.round(weeksNeeded)} weeks</strong> at 0.5kg/week`;
+            document.getElementById('weightLossRate').innerHTML = `Projected timeline: <strong>${Math.round(weightLoss / 0.5)} weeks</strong> at average 0.5kg/week`;
             
             document.getElementById('doseAdjustment').innerHTML = `Creatinine Clearance: <strong>${crCl.toFixed(1)} mL/min</strong>`;
             document.getElementById('renalStatus').innerHTML = `Status: <span class="${getRenalClass(crCl)}">${renalStatus}</span>`;
@@ -341,15 +392,93 @@
             document.getElementById('safetyCheck').innerHTML = `Fasting Glucose: <strong>${glucose} mg/dL</strong>`;
             document.getElementById('glucoseStatus').innerHTML = `Status: <span class="${getGlucoseClass(glucose)}">${glucoseStatus}</span>`;
             
-            document.getElementById('drugRecommendation').innerHTML = `Therapeutic Consideration: <strong>${recommendation.advice}</strong>`;
-            document.getElementById('drugDetails').innerHTML = `
-                <h4>${recommendation.drug}</h4>
-                <p>${recommendation.details}</p>
-                <p>${recommendation.note}</p>
-            `;
+            document.getElementById('drugRecommendation').innerHTML = `Selected Medication: <strong>${getMedicationName(selectedMed)}</strong>`;
+            
+            // Generate weekly plan
+            generateWeeklyPlan(selectedMed, currentWeek, weight);
 
             // Show results section
             document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function generateWeeklyPlan(medication, currentWeek, currentWeight) {
+            const schedule = medicationTitration[medication];
+            const planContainer = document.getElementById('weeklyDoseSchedule');
+            planContainer.innerHTML = '';
+            
+            // Calculate 1-week target based on current week's expected loss
+            const currentWeekPlan = schedule[Math.min(currentWeek-1, schedule.length-1)];
+            const targetLoss = currentWeekPlan.targetLoss;
+            const targetWeight = currentWeight - targetLoss;
+            
+            document.getElementById('oneWeekTarget').innerHTML = `
+                <strong>Next Week Target:</strong> Lose ${targetLoss.toFixed(1)}kg to reach ${targetWeight.toFixed(1)}kg
+            `;
+            
+            // Generate weekly schedule cards
+            for (let i = 0; i < schedule.length; i++) {
+                const week = schedule[i];
+                const weekCard = document.createElement('div');
+                weekCard.className = 'week-card';
+                
+                if (i+1 === currentWeek) {
+                    weekCard.style.border = '2px solid var(--warning)';
+                    weekCard.style.backgroundColor = 'rgba(255,171,0,0.1)';
+                }
+                
+                weekCard.innerHTML = `
+                    <h4>Week ${week.week}${i+1 === currentWeek ? ' (Current)' : ''}</h4>
+                    <p>Dose: <strong>${week.dose}mg</strong></p>
+                    <p>Target Weight Loss: <strong>${week.targetLoss.toFixed(1)}kg</strong></p>
+                `;
+                
+                planContainer.appendChild(weekCard);
+            }
+            
+            // Add maintenance phase if applicable
+            if (currentWeek > schedule.length) {
+                const maintenanceCard = document.createElement('div');
+                maintenanceCard.className = 'week-card';
+                maintenanceCard.style.border = '2px solid var(--primary)';
+                maintenanceCard.innerHTML = `
+                    <h4>Maintenance Phase (Week ${currentWeek})</h4>
+                    <p>Dose: <strong>${schedule[schedule.length-1].dose}mg</strong> (max dose)</p>
+                    <p>Target Weight Loss: <strong>0.5kg/week</strong> (sustainable rate)</p>
+                `;
+                planContainer.appendChild(maintenanceCard);
+            }
+            
+            // Add medication-specific details
+            const drugDetails = document.getElementById('drugDetails');
+            drugDetails.innerHTML = `
+                <h4>${getMedicationName(medication)} Dosing Protocol</h4>
+                <p>${getMedicationDetails(medication)}</p>
+                <p><strong>Administration:</strong> ${getAdministrationDetails(medication)}</p>
+            `;
+        }
+
+        function getMedicationName(med) {
+            const names = {
+                semaglutide: "Semaglutide (Wegovy®)",
+                liraglutide: "Liraglutide (Saxenda®)",
+                tirzepatide: "Tirzepatide (Zepbound®)"
+            };
+            return names[med] || med;
+        }
+
+        function getMedicationDetails(med) {
+            const details = {
+                semaglutide: "Weekly subcutaneous injection. Titrate every 4 weeks until reaching maintenance dose of 2.4mg.",
+                liraglutide: "Daily subcutaneous injection. Titrate weekly until reaching maintenance dose of 3.0mg.",
+                tirzepatide: "Weekly subcutaneous injection. Titrate every 4 weeks until reaching maintenance dose of 15mg."
+            };
+            return details[med] || "No specific dosing information available.";
+        }
+
+        function getAdministrationDetails(med) {
+            return med === 'liraglutide' 
+                ? "Inject at any time of day, with or without meals" 
+                : "Inject once weekly on the same day each week, with or without meals";
         }
 
         function calculateBMI(weight, height) {
@@ -406,48 +535,16 @@
             return "status-error";
         }
 
-        function getDrugRecommendation(crCl, glucose, bmi, currentMed) {
+        function getDrugRecommendation(crCl, glucose, bmi, selectedMed) {
             if (crCl < 30) {
                 return {
-                    drug: "Not Recommended",
                     advice: "Avoid GLP-1 RAs due to severe renal impairment",
-                    details: "Consider alternative therapies with your healthcare provider",
                     note: "Contraindicated per FDA labeling"
                 };
             }
-
-            if (bmi >= 30 || (bmi >= 27 && glucose >= 100)) {
-                if (glucose > 200) {
-                    return {
-                        drug: "Liraglutide (Victoza®)",
-                        advice: "First-line for significant hyperglycemia with obesity",
-                        details: "Dose: Start 0.6mg daily, increase to 1.2-1.8mg as tolerated",
-                        note: "Monitor for GI side effects"
-                    };
-                } else {
-                    return {
-                        drug: "Semaglutide (Wegovy®)",
-                        advice: "First-line for weight management with obesity",
-                        details: "Dose: Start 0.25mg weekly, titrate to 2.4mg over 16-20 weeks",
-                        note: "Superior weight loss efficacy in clinical trials"
-                    };
-                }
-            }
-
-            if (currentMed !== "none") {
-                return {
-                    drug: "Continue Current Therapy",
-                    advice: "Consider optimizing current GLP-1 regimen",
-                    details: `Currently on: ${currentMed}`,
-                    note: "Consult provider about dose adjustment if needed"
-                };
-            }
-
             return {
-                drug: "Consider Lifestyle Modification First",
-                advice: "GLP-1 may not be indicated based on parameters",
-                details: "BMI and glucose parameters don't meet typical initiation criteria",
-                note: "Reassess if parameters change"
+                advice: "Proceed with standard titration schedule",
+                note: "Monitor for GI side effects during dose escalation"
             };
         }
 
@@ -455,11 +552,8 @@
             document.getElementById('resultsSection').style.display = 'none';
             document.querySelectorAll('input').forEach(input => input.value = '');
             document.getElementById('sex').value = 'male';
-            document.getElementById('currentMed').value = 'none';
-        }
-
-        function showInfo() {
-            alert("This educational tool provides hypothetical GLP-1 therapy considerations based on simplified clinical algorithms. It does not constitute medical advice and should not guide treatment decisions. Always consult with a qualified healthcare provider.");
+            document.getElementById('selectedMed').value = 'semaglutide';
+            document.getElementById('currentWeek').value = '1';
         }
     </script>
 </body>
