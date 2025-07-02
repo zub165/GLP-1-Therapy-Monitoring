@@ -242,10 +242,22 @@
             <div class="input-group">
                 <label>Select GLP-1 Medication</label>
                 <select id="selectedMed">
-                    <option value="semaglutide">Semaglutide (Wegovy®)</option>
-                    <option value="liraglutide">Liraglutide (Saxenda®)</option>
-                    <option value="tirzepatide">Tirzepatide (Zepbound®)</option>
+                    <optgroup label="GLP-1 Receptor Agonists (Weight Loss)">
+                        <option value="semaglutide_wegovy">Semaglutide (Wegovy®)</option>
+                        <option value="liraglutide_saxenda">Liraglutide (Saxenda®)</option>
+                    </optgroup>
+                    <optgroup label="GLP-1/GIP Dual Agonists">
+                        <option value="tirzepatide_zepbound">Tirzepatide (Zepbound®)</option>
+                    </optgroup>
+                    <optgroup label="GLP-1 Receptor Agonists (Diabetes)">
+                        <option value="semaglutide_ozempic">Semaglutide (Ozempic®)</option>
+                        <option value="dulaglutide">Dulaglutide (Trulicity®)</option>
+                        <option value="exenatide">Exenatide (Byetta®)</option>
+                        <option value="lixisenatide">Lixisenatide (Adlyxin®)</option>
+                        <option value="albiglutide">Albiglutide (Tanzeum®)*</option>
+                    </optgroup>
                 </select>
+                <small>*Discontinued but included for reference</small>
             </div>
 
             <div class="input-group">
@@ -301,49 +313,158 @@
     <div class="references">
         <h4>References & Methodology</h4>
         <ol>
-            <li>FDA Prescribing Information: Wegovy®, Saxenda®, Zepbound®</li>
+            <li>FDA Prescribing Information for all listed medications</li>
             <li>ADA Standards of Medical Care in Diabetes - 2023</li>
             <li>STEP Clinical Trials (Semaglutide)</li>
             <li>SURPASS Clinical Trials (Tirzepatide)</li>
+            <li>LEAD Clinical Trials (Liraglutide)</li>
         </ol>
+        
+        <h4>Complete List of FDA-Approved GLP-1 Medications</h4>
+        <div style="column-count: 2;">
+            <h5>For Weight Management:</h5>
+            <ul>
+                <li>Semaglutide (Wegovy®)</li>
+                <li>Liraglutide (Saxenda®)</li>
+                <li>Tirzepatide (Zepbound®)*</li>
+            </ul>
+            
+            <h5>For Type 2 Diabetes:</h5>
+            <ul>
+                <li>Semaglutide (Ozempic®)</li>
+                <li>Dulaglutide (Trulicity®)</li>
+                <li>Exenatide (Byetta®)</li>
+                <li>Exenatide ER (Bydureon®)</li>
+                <li>Lixisenatide (Adlyxin®)</li>
+                <li>Albiglutide (Tanzeum®)*</li>
+                <li>Tirzepatide (Mounjaro®)*</li>
+            </ul>
+        </div>
+        <small>*Tirzepatide is a GLP-1/GIP dual agonist</small><br>
+        <small>*Albiglutide was discontinued in 2018</small>
     </div>
 
     <script>
-        // Medication titration schedules
+        // Complete medication titration schedules for all FDA-approved GLP-1 medications
         const medicationTitration = {
-            semaglutide: [
-                { week: 1, dose: 0.25, targetLoss: 0.5 },
-                { week: 2, dose: 0.25, targetLoss: 0.5 },
-                { week: 3, dose: 0.5, targetLoss: 0.75 },
-                { week: 4, dose: 0.5, targetLoss: 0.75 },
-                { week: 5, dose: 1.0, targetLoss: 1.0 },
-                { week: 6, dose: 1.0, targetLoss: 1.0 },
-                { week: 7, dose: 1.7, targetLoss: 1.0 },
-                { week: 8, dose: 1.7, targetLoss: 1.0 },
-                { week: 9, dose: 2.4, targetLoss: 1.0 },
-                { week: 10, dose: 2.4, targetLoss: 1.0 }
-            ],
-            liraglutide: [
-                { week: 1, dose: 0.6, targetLoss: 0.3 },
-                { week: 2, dose: 1.2, targetLoss: 0.5 },
-                { week: 3, dose: 1.8, targetLoss: 0.5 },
-                { week: 4, dose: 2.4, targetLoss: 0.75 },
-                { week: 5, dose: 3.0, targetLoss: 0.75 }
-            ],
-            tirzepatide: [
-                { week: 1, dose: 2.5, targetLoss: 0.5 },
-                { week: 2, dose: 2.5, targetLoss: 0.5 },
-                { week: 3, dose: 5.0, targetLoss: 0.75 },
-                { week: 4, dose: 5.0, targetLoss: 0.75 },
-                { week: 5, dose: 7.5, targetLoss: 1.0 },
-                { week: 6, dose: 7.5, targetLoss: 1.0 },
-                { week: 7, dose: 10.0, targetLoss: 1.0 },
-                { week: 8, dose: 10.0, targetLoss: 1.0 },
-                { week: 9, dose: 12.5, targetLoss: 1.0 },
-                { week: 10, dose: 12.5, targetLoss: 1.0 },
-                { week: 11, dose: 15.0, targetLoss: 1.0 },
-                { week: 12, dose: 15.0, targetLoss: 1.0 }
-            ]
+            // Weight Loss Indications
+            semaglutide_wegovy: {
+                name: "Semaglutide (Wegovy®)",
+                schedule: [
+                    { week: 1, dose: 0.25, targetLoss: 0.5, notes: "Initiation dose" },
+                    { week: 2, dose: 0.25, targetLoss: 0.5, notes: "Continue initiation" },
+                    { week: 3, dose: 0.5, targetLoss: 0.75, notes: "First increase" },
+                    { week: 4, dose: 0.5, targetLoss: 0.75, notes: "Continue" },
+                    { week: 5, dose: 1.0, targetLoss: 1.0, notes: "Second increase" },
+                    { week: 6, dose: 1.0, targetLoss: 1.0, notes: "Continue" },
+                    { week: 7, dose: 1.7, targetLoss: 1.0, notes: "Third increase" },
+                    { week: 8, dose: 1.7, targetLoss: 1.0, notes: "Continue" },
+                    { week: 9, dose: 2.4, targetLoss: 1.0, notes: "Maintenance dose" },
+                    { week: 10, dose: 2.4, targetLoss: 1.0, notes: "Maintenance" }
+                ],
+                administration: "Weekly subcutaneous injection",
+                maxDose: 2.4,
+                indication: "Chronic weight management"
+            },
+            liraglutide_saxenda: {
+                name: "Liraglutide (Saxenda®)",
+                schedule: [
+                    { week: 1, dose: 0.6, targetLoss: 0.3, notes: "Initiation dose" },
+                    { week: 2, dose: 1.2, targetLoss: 0.5, notes: "First increase" },
+                    { week: 3, dose: 1.8, targetLoss: 0.5, notes: "Second increase" },
+                    { week: 4, dose: 2.4, targetLoss: 0.75, notes: "Third increase" },
+                    { week: 5, dose: 3.0, targetLoss: 0.75, notes: "Maintenance dose" }
+                ],
+                administration: "Daily subcutaneous injection",
+                maxDose: 3.0,
+                indication: "Chronic weight management"
+            },
+            tirzepatide_zepbound: {
+                name: "Tirzepatide (Zepbound®)",
+                schedule: [
+                    { week: 1, dose: 2.5, targetLoss: 0.5, notes: "Initiation dose" },
+                    { week: 2, dose: 2.5, targetLoss: 0.5, notes: "Continue initiation" },
+                    { week: 3, dose: 5.0, targetLoss: 0.75, notes: "First increase" },
+                    { week: 4, dose: 5.0, targetLoss: 0.75, notes: "Continue" },
+                    { week: 5, dose: 7.5, targetLoss: 1.0, notes: "Second increase" },
+                    { week: 6, dose: 7.5, targetLoss: 1.0, notes: "Continue" },
+                    { week: 7, dose: 10.0, targetLoss: 1.0, notes: "Third increase" },
+                    { week: 8, dose: 10.0, targetLoss: 1.0, notes: "Continue" },
+                    { week: 9, dose: 12.5, targetLoss: 1.0, notes: "Fourth increase" },
+                    { week: 10, dose: 12.5, targetLoss: 1.0, notes: "Continue" },
+                    { week: 11, dose: 15.0, targetLoss: 1.0, notes: "Maintenance dose" },
+                    { week: 12, dose: 15.0, targetLoss: 1.0, notes: "Maintenance" }
+                ],
+                administration: "Weekly subcutaneous injection",
+                maxDose: 15.0,
+                indication: "Chronic weight management (GLP-1/GIP dual agonist)"
+            },
+            // Diabetes Indications
+            semaglutide_ozempic: {
+                name: "Semaglutide (Ozempic®)",
+                schedule: [
+                    { week: 1, dose: 0.25, targetLoss: 0.25, notes: "Initiation dose" },
+                    { week: 2, dose: 0.25, targetLoss: 0.25, notes: "Continue initiation" },
+                    { week: 3, dose: 0.5, targetLoss: 0.5, notes: "First increase" },
+                    { week: 4, dose: 0.5, targetLoss: 0.5, notes: "Continue" },
+                    { week: 5, dose: 1.0, targetLoss: 0.5, notes: "Second increase" },
+                    { week: 6, dose: 1.0, targetLoss: 0.5, notes: "Continue" },
+                    { week: 7, dose: 2.0, targetLoss: 0.5, notes: "Maintenance dose" },
+                    { week: 8, dose: 2.0, targetLoss: 0.5, notes: "Maintenance" }
+                ],
+                administration: "Weekly subcutaneous injection",
+                maxDose: 2.0,
+                indication: "Type 2 diabetes"
+            },
+            dulaglutide: {
+                name: "Dulaglutide (Trulicity®)",
+                schedule: [
+                    { week: 1, dose: 0.75, targetLoss: 0.25, notes: "Initiation dose" },
+                    { week: 2, dose: 0.75, targetLoss: 0.25, notes: "Continue" },
+                    { week: 3, dose: 1.5, targetLoss: 0.5, notes: "First increase" },
+                    { week: 4, dose: 1.5, targetLoss: 0.5, notes: "Continue" },
+                    { week: 5, dose: 3.0, targetLoss: 0.5, notes: "Second increase" },
+                    { week: 6, dose: 3.0, targetLoss: 0.5, notes: "Continue" },
+                    { week: 7, dose: 4.5, targetLoss: 0.5, notes: "Third increase" },
+                    { week: 8, dose: 4.5, targetLoss: 0.5, notes: "Maintenance dose" }
+                ],
+                administration: "Weekly subcutaneous injection",
+                maxDose: 4.5,
+                indication: "Type 2 diabetes"
+            },
+            exenatide: {
+                name: "Exenatide (Byetta®)",
+                schedule: [
+                    { week: 1, dose: 5, targetLoss: 0.25, notes: "Initiation dose (twice daily)" },
+                    { week: 2, dose: 5, targetLoss: 0.25, notes: "Continue" },
+                    { week: 3, dose: 10, targetLoss: 0.5, notes: "Maintenance dose (twice daily)" }
+                ],
+                administration: "Twice daily subcutaneous injection",
+                maxDose: 10,
+                indication: "Type 2 diabetes"
+            },
+            lixisenatide: {
+                name: "Lixisenatide (Adlyxin®)",
+                schedule: [
+                    { week: 1, dose: 10, targetLoss: 0.25, notes: "Initiation dose (daily)" },
+                    { week: 2, dose: 10, targetLoss: 0.25, notes: "Continue" },
+                    { week: 3, dose: 20, targetLoss: 0.5, notes: "Maintenance dose (daily)" }
+                ],
+                administration: "Daily subcutaneous injection",
+                maxDose: 20,
+                indication: "Type 2 diabetes"
+            },
+            albiglutide: {
+                name: "Albiglutide (Tanzeum®)*",
+                schedule: [
+                    { week: 1, dose: 30, targetLoss: 0.25, notes: "Initiation dose" },
+                    { week: 2, dose: 30, targetLoss: 0.25, notes: "Continue" },
+                    { week: 3, dose: 50, targetLoss: 0.5, notes: "Maintenance dose" }
+                ],
+                administration: "Weekly subcutaneous injection",
+                maxDose: 50,
+                indication: "Type 2 diabetes (discontinued)"
+            }
         };
 
         function calculateAll() {
@@ -377,7 +498,6 @@
             const crCl = calculateCrCl(age, weight, creatinine, sex);
             const renalStatus = getRenalStatus(crCl);
             const glucoseStatus = getGlucoseStatus(glucose);
-            const recommendation = getDrugRecommendation(crCl, glucose, bmi, selectedMed);
 
             // Display standard results
             document.getElementById('bmiResult').innerHTML = `Current BMI: <strong>${bmi.toFixed(1)}</strong> | Target BMI: <strong>${targetBmi.toFixed(1)}</strong>`;
@@ -392,22 +512,21 @@
             document.getElementById('safetyCheck').innerHTML = `Fasting Glucose: <strong>${glucose} mg/dL</strong>`;
             document.getElementById('glucoseStatus').innerHTML = `Status: <span class="${getGlucoseClass(glucose)}">${glucoseStatus}</span>`;
             
-            document.getElementById('drugRecommendation').innerHTML = `Selected Medication: <strong>${getMedicationName(selectedMed)}</strong>`;
-            
-            // Generate weekly plan
-            generateWeeklyPlan(selectedMed, currentWeek, weight);
+            // Generate weekly plan and drug details
+            generateWeeklyPlan(selectedMed, currentWeek, weight, crCl);
 
             // Show results section
             document.getElementById('resultsSection').style.display = 'block';
         }
 
-        function generateWeeklyPlan(medication, currentWeek, currentWeight) {
-            const schedule = medicationTitration[medication];
+        function generateWeeklyPlan(medication, currentWeek, currentWeight, crCl) {
+            const medInfo = medicationTitration[medication];
             const planContainer = document.getElementById('weeklyDoseSchedule');
             planContainer.innerHTML = '';
             
             // Calculate 1-week target based on current week's expected loss
-            const currentWeekPlan = schedule[Math.min(currentWeek-1, schedule.length-1)];
+            const weekIndex = Math.min(currentWeek-1, medInfo.schedule.length-1);
+            const currentWeekPlan = medInfo.schedule[weekIndex];
             const targetLoss = currentWeekPlan.targetLoss;
             const targetWeight = currentWeight - targetLoss;
             
@@ -416,33 +535,33 @@
             `;
             
             // Generate weekly schedule cards
-            for (let i = 0; i < schedule.length; i++) {
-                const week = schedule[i];
+            medInfo.schedule.forEach((week, index) => {
                 const weekCard = document.createElement('div');
                 weekCard.className = 'week-card';
                 
-                if (i+1 === currentWeek) {
+                if (index+1 === currentWeek) {
                     weekCard.style.border = '2px solid var(--warning)';
                     weekCard.style.backgroundColor = 'rgba(255,171,0,0.1)';
                 }
                 
                 weekCard.innerHTML = `
-                    <h4>Week ${week.week}${i+1 === currentWeek ? ' (Current)' : ''}</h4>
-                    <p>Dose: <strong>${week.dose}mg</strong></p>
+                    <h4>Week ${week.week}${index+1 === currentWeek ? ' (Current)' : ''}</h4>
+                    <p>Dose: <strong>${week.dose}${medInfo.maxDose > 10 ? 'mg' : 'μg'}</strong></p>
                     <p>Target Weight Loss: <strong>${week.targetLoss.toFixed(1)}kg</strong></p>
+                    <small>${week.notes}</small>
                 `;
                 
                 planContainer.appendChild(weekCard);
-            }
+            });
             
             // Add maintenance phase if applicable
-            if (currentWeek > schedule.length) {
+            if (currentWeek > medInfo.schedule.length) {
                 const maintenanceCard = document.createElement('div');
                 maintenanceCard.className = 'week-card';
                 maintenanceCard.style.border = '2px solid var(--primary)';
                 maintenanceCard.innerHTML = `
                     <h4>Maintenance Phase (Week ${currentWeek})</h4>
-                    <p>Dose: <strong>${schedule[schedule.length-1].dose}mg</strong> (max dose)</p>
+                    <p>Dose: <strong>${medInfo.maxDose}${medInfo.maxDose > 10 ? 'mg' : 'μg'}</strong> (max dose)</p>
                     <p>Target Weight Loss: <strong>0.5kg/week</strong> (sustainable rate)</p>
                 `;
                 planContainer.appendChild(maintenanceCard);
@@ -451,34 +570,16 @@
             // Add medication-specific details
             const drugDetails = document.getElementById('drugDetails');
             drugDetails.innerHTML = `
-                <h4>${getMedicationName(medication)} Dosing Protocol</h4>
-                <p>${getMedicationDetails(medication)}</p>
-                <p><strong>Administration:</strong> ${getAdministrationDetails(medication)}</p>
+                <h4>${medInfo.name}</h4>
+                <p><strong>Indication:</strong> ${medInfo.indication}</p>
+                <p><strong>Administration:</strong> ${medInfo.administration}</p>
+                <p><strong>Maximum Dose:</strong> ${medInfo.maxDose}${medInfo.maxDose > 10 ? 'mg' : 'μg'}</p>
+                ${crCl < 30 ? '<p class="status-error">Warning: Use contraindicated in severe renal impairment</p>' : ''}
             `;
-        }
-
-        function getMedicationName(med) {
-            const names = {
-                semaglutide: "Semaglutide (Wegovy®)",
-                liraglutide: "Liraglutide (Saxenda®)",
-                tirzepatide: "Tirzepatide (Zepbound®)"
-            };
-            return names[med] || med;
-        }
-
-        function getMedicationDetails(med) {
-            const details = {
-                semaglutide: "Weekly subcutaneous injection. Titrate every 4 weeks until reaching maintenance dose of 2.4mg.",
-                liraglutide: "Daily subcutaneous injection. Titrate weekly until reaching maintenance dose of 3.0mg.",
-                tirzepatide: "Weekly subcutaneous injection. Titrate every 4 weeks until reaching maintenance dose of 15mg."
-            };
-            return details[med] || "No specific dosing information available.";
-        }
-
-        function getAdministrationDetails(med) {
-            return med === 'liraglutide' 
-                ? "Inject at any time of day, with or without meals" 
-                : "Inject once weekly on the same day each week, with or without meals";
+            
+            document.getElementById('drugRecommendation').innerHTML = `
+                Selected Medication: <strong>${medInfo.name}</strong>
+            `;
         }
 
         function calculateBMI(weight, height) {
@@ -535,24 +636,11 @@
             return "status-error";
         }
 
-        function getDrugRecommendation(crCl, glucose, bmi, selectedMed) {
-            if (crCl < 30) {
-                return {
-                    advice: "Avoid GLP-1 RAs due to severe renal impairment",
-                    note: "Contraindicated per FDA labeling"
-                };
-            }
-            return {
-                advice: "Proceed with standard titration schedule",
-                note: "Monitor for GI side effects during dose escalation"
-            };
-        }
-
         function resetForm() {
             document.getElementById('resultsSection').style.display = 'none';
             document.querySelectorAll('input').forEach(input => input.value = '');
             document.getElementById('sex').value = 'male';
-            document.getElementById('selectedMed').value = 'semaglutide';
+            document.getElementById('selectedMed').value = 'semaglutide_wegovy';
             document.getElementById('currentWeek').value = '1';
         }
     </script>
